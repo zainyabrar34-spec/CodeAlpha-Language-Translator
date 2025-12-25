@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Translation Tool</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 Language Translation Tool</h1>
+
+        <form method="POST" action="/">
+            <textarea name="text" placeholder="Enter text here..." rows="4">{{ request.form.get('text') or '' }}</textarea>
+
+            <div class="language-select">
+                <select name="source_lang">
+                    <option value="en" selected>English</option>
+                    <option value="hi">Hindi</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="it">Italian</option>
+                    <option value="ja">Japanese</option>
+                    <option value="ko">Korean</option>
+                    <option value="ar">Arabic</option>
+                </select>
+
+                <select name="target_lang">
+                    <option value="hi" selected>Hindi</option>
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="it">Italian</option>
+                    <option value="ja">Japanese</option>
+                    <option value="ko">Korean</option>
+                    <option value="ar">Arabic</option>
+                </select>
+            </div>
+
+            <button type="submit">Translate</button>
+        </form>
+
+        <h3>Translated Text:</h3>
+        <div id="translated-text">{{ translated_text or '' }}</div>
+
+        <button id="copy-btn">Copy</button>
+        <button id="speak-btn">🔊 Speak</button>
+    </div>
+
+    <script>
+const translatedTextDiv = document.getElementById('translated-text');
+const copyBtn = document.getElementById('copy-btn');
+const speakBtn = document.getElementById('speak-btn');
+
+// Copy button
+copyBtn.addEventListener('click', () => {
+    const text = translatedTextDiv.innerText;
+    if (text) navigator.clipboard.writeText(text).then(() => alert('Copied!'));
+    else alert('Nothing to copy!');
+});
+
+// Speak button
+speakBtn.addEventListener('click', () => {
+    const text = translatedTextDiv.innerText.trim();
+    if (!text) { alert('Nothing to speak!'); return; }
+
+    // Wait for voices to load
+    let voices = speechSynthesis.getVoices();
+    if (!voices.length) {
+        speechSynthesis.onvoiceschanged = () => speakText(text);
+    } else {
+        speakText(text);
+    }
+});
+
+function speakText(text) {
+    const targetLang = document.querySelector('select[name="target_lang"]').value;
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    // Map languages to voices
+    const voices = speechSynthesis.getVoices();
+    let voice = voices.find(v => {
+        if (targetLang === 'en') return v.lang.startsWith('en');
+        if (targetLang === 'hi') return v.lang.startsWith('hi');
+        if (targetLang === 'es') return v.lang.startsWith('es');
+        if (targetLang === 'fr') return v.lang.startsWith('fr');
+        if (targetLang === 'de') return v.lang.startsWith('de');
+        if (targetLang === 'it') return v.lang.startsWith('it');
+        if (targetLang === 'ja') return v.lang.startsWith('ja');
+        if (targetLang === 'ko') return v.lang.startsWith('ko');
+        if (targetLang === 'ar') return v.lang.startsWith('ar');
+        return false;
+    });
+
+    if (voice) utterance.voice = voice;
+    speechSynthesis.speak(utterance);
+}
+
+            </script>
+</body>
+</html>
